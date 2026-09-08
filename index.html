@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>나 대한민국 상위 몇 %? | 내자산순위</title>
+  <meta name="description" content="내 나이와 가구 순자산을 입력하면 대한민국 가구 중 내 자산이 어느 정도인지 확인해보세요.">
+  <meta property="og:title" content="나 대한민국 상위 몇 %?">
+  <meta property="og:description" content="내 나이에 이 정도 자산이면 대한민국에서 어느 정도일까?">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#111827">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">내자산순위</div>
+    <button class="ghost" id="howBtn">계산 기준</button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">대한민국 가구 자산 테스트</div>
+      <h1>나 대한민국<br><span>상위 몇 %?</span></h1>
+      <p>내 나이에 이 정도 순자산이면<br>대한민국에서 어느 정도일까?</p>
+
+      <div class="card input-card">
+        <label>나이</label>
+        <div class="input-wrap">
+          <input id="age" type="number" inputmode="numeric" min="19" max="100" placeholder="예: 38">
+          <span>세</span>
+        </div>
+
+        <label>우리집 순자산</label>
+        <div class="input-wrap">
+          <input id="netWorth" type="number" inputmode="numeric" min="0" step="100" placeholder="예: 50000">
+          <span>만원</span>
+        </div>
+        <p class="hint">순자산 = 총자산 − 부채</p>
+
+        <button class="primary" id="calculateBtn">내 순위 확인하기 <span>→</span></button>
+      </div>
+
+      <div class="trust-row">
+        <span>✓ 2025 가계금융복지조사 기준</span>
+        <span>✓ 가구 기준</span>
+      </div>
+    </section>
+
+    <section id="result" class="result hidden">
+      <div class="result-head">
+        <div class="eyebrow">당신의 자산 성적표</div>
+        <h2>대한민국 <strong id="percentile">상위 50%</strong></h2>
+        <p id="rankText"></p>
+      </div>
+
+      <div class="score-card">
+        <div class="score-label">내 순자산</div>
+        <div class="score-number" id="worthText">0원</div>
+        <div class="bar"><div id="barFill"></div></div>
+        <div class="bar-caption"><span>하위</span><span id="barCaption">상위 50%</span></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat">
+          <span>대한민국 평균</span>
+          <strong>4억 7,144만원</strong>
+        </div>
+        <div class="stat">
+          <span>대한민국 중위값</span>
+          <strong>약 2억 4천만원</strong>
+        </div>
+        <div class="stat">
+          <span id="ageLabel">내 연령대 평균</span>
+          <strong id="ageAvg">-</strong>
+        </div>
+        <div class="stat">
+          <span>10억 이상 가구</span>
+          <strong>11.8%</strong>
+        </div>
+      </div>
+
+      <div class="share-card">
+        <div>
+          <div class="share-title">친구는 몇 %일까?</div>
+          <div class="share-desc">결과를 공유하고 서로 비교해보세요.</div>
+        </div>
+        <button class="share" id="shareBtn">결과 공유하기</button>
+      </div>
+
+      <div class="ad-section">
+        <div class="ad-title">💡 자산 관리에 관심 있다면</div>
+        <div class="ad-sub">내자산순위는 쿠팡파트너스 활동을 통해 일정액의 수수료를 제공받을 수 있습니다.</div>
+        <div class="products">
+          <a class="product" href="COUPANG_LINK_1" target="_blank" rel="nofollow sponsored noopener">
+            <span class="product-icon">📚</span>
+            <span><b>재테크 인기 상품</b><small>쿠팡에서 확인하기 →</small></span>
+          </a>
+          <a class="product" href="COUPANG_LINK_2" target="_blank" rel="nofollow sponsored noopener">
+            <span class="product-icon">📒</span>
+            <span><b>돈 관리에 도움 되는 상품</b><small>쿠팡에서 확인하기 →</small></span>
+          </a>
+        </div>
+      </div>
+
+      <div class="source-card">
+        <h3>어떻게 계산했나요?</h3>
+        <p>2025년 3월 말 기준 국가데이터처·한국은행·금융감독원 「가계금융복지조사」의 가구 순자산 분포와 공표된 분위 기준을 이용한 참고용 추정치입니다.</p>
+        <p class="small">평균 순자산 4억 7,144만원 · 3억원 미만 57.0% · 10억원 이상 11.8% · P50 2억 3,860만원 · P90 11억 20만원</p>
+      </div>
+
+      <button class="reset" id="resetBtn">다시 계산하기</button>
+    </section>
+
+    <section class="seo-copy">
+      <h2>내 순자산은 대한민국 상위 몇 %일까?</h2>
+      <p>순자산은 집·예금·주식 등 자산에서 대출과 같은 부채를 뺀 금액입니다. 이 사이트는 가구 기준으로 내 순자산이 대한민국에서 어느 정도 위치인지 쉽게 확인할 수 있도록 만들었습니다.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div>내자산순위</div>
+    <p>본 결과는 통계자료를 바탕으로 한 참고용 추정치이며 실제 개인·가구의 정확한 순위를 보장하지 않습니다.</p>
+    <p>© 2026 내자산순위. All rights reserved.</p>
+  </footer>
+
+  <dialog id="criteria">
+    <button class="dialog-close" id="closeDialog">×</button>
+    <h3>계산 기준</h3>
+    <p><b>기준:</b> 가구주 연령과 가구 순자산을 입력합니다.</p>
+    <p><b>순자산:</b> 총자산 − 총부채</p>
+    <p><b>전국 순위:</b> 2025년 가계금융복지조사의 공표 분포·분위 기준을 바탕으로 보간한 참고용 추정치입니다.</p>
+    <p><b>연령:</b> 전국 상위 % 계산의 주 기준은 순자산이며, 나이는 연령대 평균과 비교하는 데 사용합니다.</p>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
