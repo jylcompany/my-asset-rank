@@ -21,3 +21,12 @@
 
 ## 중요
 사이트를 광고를 붙여 공개하기 전에 국가데이터처가 제공하는 2025 부록 통계표의 P10~P40 값까지 확인하여 `officialCutoffs`에 추가하는 것을 권장합니다.
+
+
+## Cloudflare Workers 배포
+이 저장소는 Cloudflare Workers의 Static Assets 방식으로 배포합니다.
+Cloudflare 설정:
+- Project name: my-asset-rank
+- Build command: 비워두기
+- Deploy command: `npx wrangler deploy`
+- `wrangler.jsonc`가 루트에 있어야 합니다.
