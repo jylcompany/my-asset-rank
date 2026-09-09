@@ -3,6 +3,6 @@
   "name": "my-asset-rank",
   "compatibility_date": "2026-09-08",
   "assets": {
-    "directory": "."
+    "directory": "./public"
   }
 }

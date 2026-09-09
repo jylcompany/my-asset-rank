@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://my-asset-rank.flrlgns200.workers.dev/sitemap.xml
