@@ -197,6 +197,17 @@
   $('closeDialog').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
 
+  // Make the Coupang Partners economic-interest disclosure visible on the first screen,
+  // immediately before the homepage's first partner link.
+  const affiliateInfo = document.querySelector('.affiliate-strip > div');
+  if (affiliateInfo && !affiliateInfo.querySelector('.affiliate-disclosure')) {
+    const disclosure = document.createElement('p');
+    disclosure.className = 'affiliate-disclosure';
+    disclosure.textContent = '이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.';
+    disclosure.style.cssText = 'margin:0 0 8px;padding:8px 10px;border-radius:9px;background:#f8f8ff;color:#667085;font-size:10px;line-height:1.5;font-weight:600;';
+    affiliateInfo.prepend(disclosure);
+  }
+
   // Shared links: ?age=38&net=50000 automatically restore the result.
   const params = new URLSearchParams(location.search);
   const sharedAge = Number(params.get('age'));
