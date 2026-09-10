@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "my-asset-rank",
-  "compatibility_date": "2026-09-08",
+  "name": "saju-master",
+  "compatibility_date": "2026-09-10",
   "assets": {
     "directory": "."
   }
