@@ -2,8 +2,7 @@
   'use strict';
 
   // 2025 Household Finance and Welfare Survey (단위: 만원)
-  // P90 초과 구간은 공개된 공식 P80/P90 경계값을 바탕으로 상위 꼬리분포를
-  // Pareto 방식으로 추정합니다. 따라서 P90 초과 수치는 공식 발표값이 아닌 참고용 추정치입니다.
+  // P90 초과와 P10 미만 구간은 공식 경계값을 바탕으로 참고용 추정치를 계산합니다.
   const DATA = {
     year: 2025,
     date: '2025-03-31',
@@ -57,49 +56,22 @@
     return DATA.ages.find(x => age >= x.min && age <= x.max) || DATA.ages[DATA.ages.length - 1];
   }
 
-  // 공식 P80/P90 간격을 이용해 P90 초과 상위 꼬리의 Pareto 지수 추정.
-  // P80에서 생존확률 20%, P90에서 10%가 되도록 보정합니다.
+  // 상위 꼬리: 공식 P80/P90 간격으로 Pareto 지수를 추정합니다.
   const TAIL_ALPHA = Math.log(2) / Math.log(DATA.cutoffs[8][1] / DATA.cutoffs[7][1]);
   const P90_VALUE = DATA.cutoffs[8][1];
-
   function estimateTailTop(net) {
-    // P90에서 top 10%를 시작점으로 하여 순자산 증가에 따라 상위 비율을 연속적으로 추정.
     return 10 * Math.pow(net / P90_VALUE, -TAIL_ALPHA);
   }
 
-  function tailBand(top) {
-    if (top <= 0.1) return '상위 0.1% 이내';
-    if (top <= 1) return '상위 1% 이내';
-    if (top <= 2) return '상위 2% 이내';
-    if (top <= 5) return '상위 5% 이내';
-    return '상위 10% 이내';
-  }
+  // 하위 꼬리: 공식 P10/P20 간격을 한 번 더 외삽해 P0 참고값을 만듭니다.
+  // P10=1,210만원, P20=5,108만원의 간격을 이용한 모델이며 공식 P0 값은 아닙니다.
+  const P10_VALUE = DATA.cutoffs[0][1];
+  const LOWER_STEP = DATA.cutoffs[1][1] - DATA.cutoffs[0][1];
+  const ESTIMATED_P0 = P10_VALUE - LOWER_STEP;
 
-  function interpolatePercentile(net) {
-    const c = DATA.cutoffs;
-    if (net < c[0][1]) return { mode: 'below', percentile: null, top: null, bracket: 'P10 미만' };
-
-    if (net > P90_VALUE) {
-      const top = Math.max(0.000001, estimateTailTop(net));
-      const percentile = 100 - top;
-      return {
-        mode: 'tail',
-        percentile,
-        top,
-        bracket: 'P90 초과',
-        tailAlpha: TAIL_ALPHA,
-        band: tailBand(top)
-      };
-    }
-
-    for (let i = 0; i < c.length - 1; i++) {
-      const [p1, v1] = c[i], [p2, v2] = c[i + 1];
-      if (net >= v1 && net <= v2) {
-        const p = p1 + (net - v1) / (v2 - v1) * (p2 - p1);
-        return { mode: 'exact', percentile: p, top: 100 - p, lower: [p1, v1], upper: [p2, v2] };
-      }
-    }
-    return { mode: 'tail', percentile: 90, top: 10, bracket: 'P90 초과' };
+  function estimateLowerPercentile(net) {
+    const p = ((net - ESTIMATED_P0) / (P10_VALUE - ESTIMATED_P0)) * 10;
+    return Math.max(0.1, Math.min(9.9, p));
   }
 
   function formatTop(top) {
@@ -112,13 +84,50 @@
   }
 
   function rankText(rank) {
-    if (rank.mode === 'below') return { title: '하위 10% 구간', score: '하위 10% 구간', badge: 'P10↓' };
-    if (rank.mode === 'tail') return { title: `대한민국 ${rank.band}`, score: `상위 ${formatTop(rank.top)}`, badge: `P${rank.percentile.toFixed(1)}` };
+    if (rank.mode === 'lower-tail') {
+      const bottom = rank.bottom;
+      return { title: `대한민국 하위 ${formatTop(bottom)}`, score: `하위 ${formatTop(bottom)}`, badge: `P${bottom.toFixed(1)}` };
+    }
+    if (rank.mode === 'tail') {
+      return { title: `대한민국 ${rank.band}`, score: `상위 ${formatTop(rank.top)}`, badge: `P${rank.percentile.toFixed(1)}` };
+    }
     return { title: `대한민국 상위 ${formatTop(rank.top)}`, score: `상위 ${formatTop(rank.top)}`, badge: `P${Math.round(rank.percentile)}` };
   }
 
+  function tailBand(top) {
+    if (top <= 0.1) return '상위 0.1% 이내';
+    if (top <= 1) return '상위 1% 이내';
+    if (top <= 2) return '상위 2% 이내';
+    if (top <= 5) return '상위 5% 이내';
+    return '상위 10% 이내';
+  }
+
+  function interpolatePercentile(net) {
+    const c = DATA.cutoffs;
+
+    if (net < c[0][1]) {
+      const bottom = estimateLowerPercentile(net);
+      return { mode: 'lower-tail', percentile: bottom, bottom, bracket: 'P10 미만', estimatedP0: ESTIMATED_P0 };
+    }
+
+    if (net > P90_VALUE) {
+      const top = Math.max(0.000001, estimateTailTop(net));
+      const percentile = 100 - top;
+      return { mode: 'tail', percentile, top, bracket: 'P90 초과', tailAlpha: TAIL_ALPHA, band: tailBand(top) };
+    }
+
+    for (let i = 0; i < c.length - 1; i++) {
+      const [p1, v1] = c[i], [p2, v2] = c[i + 1];
+      if (net >= v1 && net <= v2) {
+        const p = p1 + (net - v1) / (v2 - v1) * (p2 - p1);
+        return { mode: 'exact', percentile: p, top: 100 - p, lower: [p1, v1], upper: [p2, v2] };
+      }
+    }
+    return { mode: 'tail', percentile: 90, top: 10, bracket: 'P90 초과', band: '상위 10% 이내' };
+  }
+
   function meterPosition(rank) {
-    if (rank.mode === 'below') return 5;
+    if (rank.mode === 'lower-tail') return Math.max(1, Math.min(9.9, rank.bottom));
     if (rank.mode === 'tail') return Math.max(90, Math.min(99.8, rank.percentile));
     return Math.max(2, Math.min(98, rank.percentile));
   }
@@ -148,7 +157,7 @@
       ? '공식 P10~P90 경계값 사이를 보간한 참고용 추정치입니다.'
       : rank.mode === 'tail'
         ? 'P90 초과는 공식 P80·P90 경계값을 바탕으로 상위 꼬리분포를 추정한 참고용 수치입니다.'
-        : '공개된 공식 경계값만으로 정확한 백분위를 산출할 수 없는 구간입니다.';
+        : 'P10 미만은 공식 P10·P20 경계값을 바탕으로 하위 꼬리분포를 추정한 참고용 수치입니다.';
     $('scoreText').textContent = rt.score;
     $('scoreBadge').textContent = rt.badge;
     $('myNet').textContent = formatManwon(net);
@@ -170,10 +179,10 @@
       $('ageCompare').textContent = `해당 연령대 평균보다 ${formatManwon(ageGroup.avg - net)} 적습니다.`;
     }
 
-    if (rank.mode === 'below') {
-      $('bracketText').innerHTML = `입력하신 순자산 <strong>${formatManwon(net)}</strong>은 공식 P10 경계값 <strong>${formatManwon(DATA.cutoffs[0][1])}</strong>보다 낮습니다. 이 구간의 세부 백분위는 공개된 경계값만으로 계산하지 않았습니다.`;
+    if (rank.mode === 'lower-tail') {
+      $('bracketText').innerHTML = `입력하신 순자산 <strong>${formatManwon(net)}</strong>은 공식 P10 경계값 <strong>${formatManwon(P10_VALUE)}</strong>보다 낮습니다. <strong>${rt.score}</strong>로 세분화했으며, P10·P20 경계값 간격을 한 번 더 외삽한 참고용 추정치입니다.`;
     } else if (rank.mode === 'tail') {
-      $('bracketText').innerHTML = `입력하신 순자산 <strong>${formatManwon(net)}</strong>은 공식 P90 경계값 <strong>${formatManwon(P90_VALUE)}</strong>보다 높습니다. <strong>${rt.score}</strong>로 세분화해 표시하며, 이 수치는 P80(${formatManwon(DATA.cutoffs[7][1])})·P90(${formatManwon(P90_VALUE)}) 경계값에 맞춘 상위 꼬리분포 추정치입니다.`;
+      $('bracketText').innerHTML = `입력하신 순자산 <strong>${formatManwon(net)}</strong>은 공식 P90 경계값 <strong>${formatManwon(P90_VALUE)}</strong>보다 높습니다. <strong>${rt.score}</strong>로 세분화해 표시하며, P80(${formatManwon(DATA.cutoffs[7][1])})·P90(${formatManwon(P90_VALUE)}) 경계값에 맞춘 상위 꼬리분포 추정치입니다.`;
     } else {
       $('bracketText').innerHTML = `<strong>P${rank.lower[0]}(${formatManwon(rank.lower[1])})</strong>와 <strong>P${rank.upper[0]}(${formatManwon(rank.upper[1])})</strong> 사이에서 선형 보간했습니다. 계산상 백분위는 <strong>P${rank.percentile.toFixed(1)}</strong>, 상위 비율은 <strong>${formatTop(rank.top)}</strong>입니다.`;
     }
@@ -240,8 +249,6 @@
   $('closeDialog').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
 
-  // Make the Coupang Partners economic-interest disclosure visible on the first screen,
-  // immediately before the homepage's first partner link.
   const affiliateInfo = document.querySelector('.affiliate-strip > div');
   if (affiliateInfo && !affiliateInfo.querySelector('.affiliate-disclosure')) {
     const disclosure = document.createElement('p');
@@ -251,7 +258,6 @@
     affiliateInfo.prepend(disclosure);
   }
 
-  // Shared links: ?age=38&net=50000 automatically restore the result.
   const params = new URLSearchParams(location.search);
   const sharedAge = Number(params.get('age'));
   const sharedNet = parseWon10k(params.get('net'));
