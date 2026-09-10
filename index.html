@@ -69,7 +69,7 @@
           <div class="score-badge" id="scoreBadge">P50</div>
         </div>
         <div class="meter"><div class="meter-fill" id="meterFill"></div><div class="meter-dot" id="meterDot"></div></div>
-        <div class="meter-labels"><span>하위 10%</span><span>중간</span><span>상위 10%</span></div>
+        <div class="meter-labels"><span>하위권</span><span>중간</span><span>상위권</span></div>
         <div class="stat-grid">
           <div><span>내 순자산</span><strong id="myNet">-</strong></div>
           <div><span>전국 평균</span><strong id="nationalAvg">4억 7,144만원</strong></div>
@@ -125,12 +125,12 @@
         <div><span class="source-label">DATA SOURCE</span><h2>2025 가계금융복지조사</h2><p>국가데이터처·한국은행·금융감독원 공동 조사. 자산·부채·순자산은 2025년 3월 말 기준입니다.</p></div>
         <a href="https://www.kostat.go.kr/board.es?act=view&bid=215&list_no=439535&mainXml=Y&mid=b80501010000" target="_blank" rel="noopener">공식 자료 보기 ↗</a>
       </div>
-      <p class="fineprint">이 서비스는 공개된 공식 분위 경계값 사이를 선형 보간해 <strong>참고용 상위 비율</strong>을 계산합니다. P10 미만·P90 초과 구간은 공개된 경계값만으로 정확한 백분위를 산출할 수 없어 각각 ‘하위 10% 구간’, ‘상위 10% 이내’로 표시합니다. 연령 비교는 가구주 연령대의 평균·중위값 비교이며, 연령대별 백분위 순위가 아닙니다.</p>
+      <p class="fineprint">이 서비스는 공개된 공식 분위 경계값을 이용해 <strong>참고용 상위·하위 비율</strong>을 계산합니다. P10~P90 사이는 공식 경계값 사이를 선형 보간하고, P10 미만과 P90 초과는 인접한 공식 경계값의 간격을 이용한 꼬리분포 추정치를 표시합니다. 꼬리 구간의 수치는 국가데이터처가 직접 공표한 개별 백분위가 아니므로 참고용으로만 봐주세요. 연령 비교는 가구주 연령대의 평균·중위값 비교이며, 연령대별 백분위 순위가 아닙니다.</p>
     </section>
   </main>
 
   <dialog id="infoDialog">
-    <div class="dialog-inner"><button class="dialog-close" id="closeDialog" type="button" aria-label="닫기">×</button><div class="eyebrow">CALCULATION</div><h2>계산 기준</h2><ul><li><strong>가구 기준</strong>: 개인 자산이 아니라 가구 순자산을 비교합니다.</li><li><strong>순자산</strong>: 총자산 − 총부채입니다.</li><li><strong>전국 순위</strong>: 2025년 조사에서 공표한 P10~P90 순자산 경계값 사이를 선형 보간합니다.</li><li><strong>연령</strong>: 가구주 연령을 입력하고 해당 연령대 평균·중위값과 비교합니다.</li><li><strong>주의</strong>: 공식 원자료에 없는 구간을 임의로 추정하지 않기 위해 P10 아래와 P90 위는 범위로만 표시합니다.</li></ul><p class="dialog-source">출처: 국가데이터처 「2025년 가계금융복지조사 결과」 및 부록 통계표.</p></div>
+    <div class="dialog-inner"><button class="dialog-close" id="closeDialog" type="button" aria-label="닫기">×</button><div class="eyebrow">CALCULATION</div><h2>계산 기준</h2><ul><li><strong>가구 기준</strong>: 개인 자산이 아니라 가구 순자산을 비교합니다.</li><li><strong>순자산</strong>: 총자산 − 총부채입니다.</li><li><strong>전국 순위</strong>: 2025년 조사에서 공표한 P10~P90 순자산 경계값 사이를 선형 보간합니다.</li><li><strong>상위 10% 초과</strong>: P80·P90 공식 경계값을 바탕으로 상위 꼬리분포를 추정해 10% 안쪽도 세분화합니다.</li><li><strong>하위 10% 미만</strong>: P10·P20 공식 경계값의 간격을 바탕으로 하위 꼬리분포를 추정해 10% 안쪽도 세분화합니다.</li><li><strong>연령</strong>: 가구주 연령을 입력하고 해당 연령대 평균·중위값과 비교합니다.</li><li><strong>주의</strong>: 꼬리 구간의 세부 백분위는 공식 원자료의 직접 공표값이 아닌 참고용 추정치입니다.</li></ul><p class="dialog-source">출처: 국가데이터처 「2025년 가계금융복지조사 결과」 및 부록 통계표.</p></div>
   </dialog>
 
   <script src="./script.js" defer></script>
